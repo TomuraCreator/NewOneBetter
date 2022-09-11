@@ -131,8 +131,55 @@ function getIframeNode(src, offsetWidth, offsetHeight) {
  * Id - номер карточки, он же ссылка на кнопке
  */
 fetch("https://netology.ru/backend/api/expert/homeworks/:id").then(data => data.json()).then(data => console.log(data));
+  function appendCard(data) {
+    `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+      crossorigin="anonymous"
+    />
+    <title>Static Template</title>
+  </head>
+  <body>
+      <div class="container">
+    <div class="row main-wrapper d-flex justify-content-center">
+      ${data}
+    </div>
+  </div>
+  </body>
+  </html>
+`;
+  }
 
+  const createCard = (data) => {
+    const { solutions, last_user_action } = data;
 
+    const anchorsTxt = "ссылок нет";
+    if (solutions.length) {
+      anchorsTxt = solutions
+        .map(
+          ({ title, link }) =>
+            `<a href="${link}" class="card-link">${title}</a>`
+        )
+        .join();
+    }
+
+    return `<div class="card w-75 shadow">
+        <div class="card-header bg-secondary bg-gradient text-light">
+          ${last_user_action.user.fullname || "Безымянный"}
+        </div>
+        <div class="card-body">
+          <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+          ${anchorsTxt}
+        </div>
+      </div>`;
+  };
 
  /* Схема
   {
