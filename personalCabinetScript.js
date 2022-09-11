@@ -95,10 +95,18 @@ cardListWzIndex.forEach( el => {
   el.addEventListener("focus", evt => {			
     const t = evt.target;
     const {href} = t.querySelector(selectorAnchor);
+  	const endPoint = href.split("/").at(-1);
     const {offsetWidth, offsetHeight} = t;
-    const iframeNode = getIframeNode(href, offsetWidth, offsetHeight);
-
-    t.appendChild(iframeNode);
+    fetch("https://netology.ru/backend/api/expert/homeworks/"+endPoint)
+      .then(data => data.json())
+      .then(data => {
+      const { solutions, last_user_action } = data;
+      const card = createCard(solutions, last_user_action);
+      const htmlTxt = appendCard(card);
+      const iframeNode = getIframeNode(htmlTxt, offsetWidth, offsetHeight);
+    	t.appendChild(iframeNode);
+    });
+    
 	})
     el.addEventListener("blur", evt => {
     const t = evt.target;
@@ -106,12 +114,12 @@ cardListWzIndex.forEach( el => {
   })
 })
   
-function getIframeNode(src, offsetWidth, offsetHeight) {
+function getIframeNode(srcdoc, offsetWidth, offsetHeight) {
   const frame = document.createElement("iframe");
-  frame.setAttribute("src", src);
+  frame.setAttribute("srcdoc", srcdoc);
   frame.setAttribute("class", "iframe_with_preshowed");
   frame.style.width = offsetWidth + "px";
- 	frame.style.height = "500px";
+ 	frame.style.height = "200px";
   frame.style.position = "absolute";
   frame.style.backgroundColor = "#fff"
   
@@ -122,7 +130,7 @@ function getIframeNode(src, offsetWidth, offsetHeight) {
   frame.style.borderStyle = "solid";
   frame.style.borderColor = "grey";
   frame.style.borderRadius = "15px";
-  
+
   return frame;
 }
 
@@ -130,9 +138,10 @@ function getIframeNode(src, offsetWidth, offsetHeight) {
 /**
  * Id - номер карточки, он же ссылка на кнопке
  */
-fetch("https://netology.ru/backend/api/expert/homeworks/:id").then(data => data.json()).then(data => console.log(data));
-  function appendCard(data) {
-    `<!DOCTYPE html>
+
+
+function appendCard(data) {
+    return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -157,25 +166,23 @@ fetch("https://netology.ru/backend/api/expert/homeworks/:id").then(data => data.
 `;
   }
 
-  const createCard = (data) => {
-    const { solutions, last_user_action } = data;
-
-    const anchorsTxt = "ссылок нет";
+function createCard(solutions, last_user_action) {
+    let anchorsTxt = "ссылок нет";
     if (solutions.length) {
       anchorsTxt = solutions
         .map(
           ({ title, link }) =>
-            `<a href="${link}" class="card-link">${title}</a>`
+            `<a href="${link}" class="card-link">${title || "ссылка без названия"}</a>`
         )
         .join();
     }
 
-    return `<div class="card w-75 shadow">
+    return `<div class="card shadow">
         <div class="card-header bg-secondary bg-gradient text-light">
           ${last_user_action.user.fullname || "Безымянный"}
         </div>
         <div class="card-body">
-          <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+          <p class="card-text">${last_user_action.message || "без комментария"}</p>
           ${anchorsTxt}
         </div>
       </div>`;
